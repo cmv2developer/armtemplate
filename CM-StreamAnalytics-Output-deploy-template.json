@@ -1,0 +1,68 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.5.0.0",
+  "parameters": {
+    "asaJob_Name": {
+      "type": "String"
+    },
+    "eHubs_NamespaceName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The namespace of the source event hub."
+      }
+    },
+    "eHubs_Name": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The name of the source event hub."
+      }
+    },
+    "eHubs_SharedAccessPolicyName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The name of the source event hub."
+      }
+    },
+    "eHubs_SharedAccessPolicyKey": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The name of the source event hub."
+      }
+    },
+    "asa_Output_Name": {
+      "type": "string",
+      "defaultValue": ""
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs/outputs",
+      "apiVersion": "2016-03-01",
+      "name": "[concat(parameters('asaJob_Name'), '/', parameters('asa_Output_Name'))]",
+      "dependsOn": [],
+      "properties": {
+        "datasource": {
+          "type": "Microsoft.ServiceBus/EventHub",
+          "properties": {
+            "eventHubName": "[parameters('eHubs_Name')]",
+            "serviceBusNamespace": "[parameters('eHubs_NamespaceName')]",
+            "sharedAccessPolicyName": "[parameters('eHubs_SharedAccessPolicyName')]",
+            "sharedAccessPolicyKey": "[parameters('eHubs_SharedAccessPolicyKey')]"
+          }
+        },
+        "serialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8",
+            "format": "LineSeparated"
+          }
+        }
+      }
+    }
+  ]
+}

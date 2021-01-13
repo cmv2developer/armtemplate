@@ -1,0 +1,115 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "North Europe",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "sqlserver_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure SQL Server name. Must be globally unique."
+      }
+    },
+    "sqldatabase_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure SQL database name."
+      }
+    },
+    "sqlAdministratorLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "The admin user of the SQL Server"
+      }
+    },
+    "sqlAdministratorLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password of the admin user of the SQL Server"
+      }
+    },
+    "serverTags": {
+      "type": "object",
+      "defaultValue": {}
+    },
+    "sqlDBSku_Name": {
+      "type": "string"
+    },
+    "sqlDBSku_Tier": {
+      "type": "string"
+    },
+    "sqlDBSku_Capacity": {
+      "type": "int"
+    }
+  },
+  "variables": {},
+  "resources": [
+      {
+        "type": "Microsoft.Sql/servers",
+        "name": "[parameters('sqlserver_Name')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('serverTags')]",
+        "apiVersion": "2015-05-01-preview",
+        "dependsOn": [
+        ],
+        "properties": {
+          "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+          "administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]",
+          "version": "12.0"
+        },
+        "resources": [
+          {
+            "name": "[parameters('sqldatabase_Name')]",
+            "type": "databases",
+            "location": "[parameters('location')]",
+            "tags": {
+              "displayName": "Database"
+            },
+            "sku": {
+              "name": "[parameters('sqlDBSku_Name')]",
+              "tier": "[parameters('sqlDBSku_Tier')]",
+              "capacity": "[parameters('sqlDBSku_Capacity')]"
+            },
+            "kind": "v12.0,user",
+            "apiVersion": "2019-06-01-preview",
+            "dependsOn": [
+              "[parameters('sqlserver_Name')]"
+            ],
+            "properties": {
+              "collation": "SQL_Latin1_General_CP1_CI_AS",
+              "maxSizeBytes": 1073741824,
+              "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+              "zoneRedundant": false,
+              "readScale": "Disabled",
+              "readReplicaCount": 0,
+              "storageAccountType": "GRS"
+            }
+          },
+          {
+            "type": "firewallrules",
+            "apiVersion": "2014-04-01",
+            "dependsOn": [
+              "[parameters('sqlserver_Name')]"
+            ],
+            "location": "[parameters('location')]",
+            "name": "AllowAllWindowsAzureIps",
+            "properties": {
+              "endIpAddress": "0.0.0.0",
+              "startIpAddress": "0.0.0.0"
+            }
+          }
+        ]
+      }
+    ],
+  "outputs": {
+    "sqlDbConnectionString": {
+      "type": "string",
+      "value": "[concat('Server=tcp:',reference(parameters('sqlserver_Name')).fullyQualifiedDomainName,',1433;Initial Catalog=',parameters('sqldatabase_Name'),';Persist Security Info=False;User ID=',parameters('sqlAdministratorLogin'),';Password=',parameters('sqlAdministratorLoginPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+    }
+  }
+}

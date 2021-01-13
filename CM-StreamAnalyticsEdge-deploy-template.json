@@ -1,0 +1,114 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.5.0.0",
+  "parameters": {
+    "asaEdgeJob_Name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "asaJob_Sku": {
+      "type": "string"
+    },
+    "asaJobType": {
+      "defaultValue": "Edge",
+      "type": "string"
+    },
+    "storageAccountASA": {
+      "type": "string"
+    },
+    "storageAccountASAKey": {
+      "type": "string"
+    },
+    "asa_StreamingUnits": {
+      "type": "int"
+    },
+    "asa_Query": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs",
+      "apiVersion": "2017-04-01-preview",
+      "name": "[parameters('asaEdgeJob_Name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('asaJob_Sku')]"
+        },
+        "eventsOutOfOrderPolicy": "Adjust",
+        "outputErrorPolicy": "Stop",
+        "eventsOutOfOrderMaxDelayInSeconds": 0,
+        "eventsLateArrivalMaxDelayInSeconds": 5,
+        "dataLocale": "en-US",
+        "compatibilityLevel": "1.2",
+        "jobStorageAccount": {
+          "authenticationMode": "ConnectionString",
+          "accountName": "[parameters('storageAccountASA')]",
+          "accountKey": "[parameters('storageAccountASAKey')]"
+        },
+        "jobType": "[parameters('asaJobType')]"
+      }
+    },
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs/inputs",
+      "apiVersion": "2017-04-01-preview",
+      "name": "[concat(parameters('asaEdgeJob_Name'), '/EdgeHubInput')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.StreamAnalytics/streamingjobs', parameters('asaEdgeJob_Name'))]"
+      ],
+      "properties": {
+        "type": "Stream",
+        "datasource": {
+          "type": "GatewayMessageBus",
+          "properties": {}
+        },
+        "compression": {
+          "type": "None"
+        },
+        "serialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs/outputs",
+      "apiVersion": "2017-04-01-preview",
+      "name": "[concat(parameters('asaEdgeJob_Name'), '/EdgeHubOutput')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.StreamAnalytics/streamingjobs', parameters('asaEdgeJob_Name'))]"
+      ],
+      "properties": {
+        "datasource": {
+          "type": "GatewayMessageBus",
+          "properties": {}
+        },
+        "serialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8",
+            "format": "Array"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs/transformations",
+      "apiVersion": "2017-04-01-preview",
+      "name": "[concat(parameters('asaEdgeJob_Name'), '/Transformation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.StreamAnalytics/streamingjobs', parameters('asaEdgeJob_Name'))]"
+      ],
+      "properties": {
+        "streamingUnits": "[parameters('asa_StreamingUnits')]",
+        "query": "[parameters('asa_Query')]"
+      }
+    }
+  ]
+}

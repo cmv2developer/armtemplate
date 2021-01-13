@@ -1,0 +1,60 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "mlw_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "name of the machine learning workspace instance"
+      }
+    },
+    "mlw_Sku": {
+      "type": "string"
+    },
+    "mlw_AppInsights_Name": {
+      "type": "string"
+    },
+    "mlw_StorageAccount_Name": {
+      "type": "string"
+    },
+    "mlw_KeyVault_Name": {
+      "type": "string"
+    },
+    "mlw_ContainerRegistry_Name": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces",
+      "apiVersion": "2020-04-01",
+      "name": "[parameters('mlw_Name')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [ ],
+      "identity": {
+        "type": "systemAssigned"
+      },
+      "sku": {
+        "tier": "[parameters('mlw_Sku')]",
+        "name": "[parameters('mlw_Sku')]"
+      },
+      "properties": {
+        "friendlyName": "[parameters('mlw_Name')]",
+        "storageAccount": "[parameters('mlw_StorageAccount_Name')]",
+        "keyVault": "[parameters('mlw_KeyVault_Name')]",
+        "applicationInsights": "[parameters('mlw_AppInsights_Name')]",
+        "containerRegistry": "[parameters('mlw_ContainerRegistry_Name')]"
+      }
+    }
+  ],
+  "outputs": {
+    "mlwName": {
+      "value": "[resourceId('Microsoft.MachineLearningServices/workspaces', parameters('mlw_Name'))]",
+      "type": "string"
+    }
+  }
+}

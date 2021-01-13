@@ -1,0 +1,44 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "eHubs_NameSpaces_Name": {
+      "type": "String"
+    },
+    "eHubs_Name": {
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    },
+    "eHubs_PartitionCount": {
+      "type": "String"
+    },
+    "eHubs_MessageRetentionInDays": {
+      "type": "String"
+    }
+  },
+  "variables": {
+    "eventHubs_Name": "[concat(parameters('eHubs_NameSpaces_Name'),'/', parameters('eHubs_Name'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.EventHub/namespaces/eventhubs",
+      "apiVersion": "2017-04-01",
+      "name": "[variables('eventHubs_Name')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [],
+      "properties": {
+        "messageRetentionInDays": "[parameters('eHubs_MessageRetentionInDays')]",
+        "partitionCount": "[parameters('eHubs_PartitionCount')]",
+        "status": "Active"
+      }
+    }
+  ],
+  "outputs": {
+    "eventHubId": {
+      "value": "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eHubs_NameSpaces_Name'), parameters('eHubs_Name'))]",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.5.0.0",
+  "parameters": {
+    "asaJob_Name": {
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    },
+    "asaJob_Sku": {
+      "type": "String"
+    },
+    "asaJobType": {
+      "defaultValue": "Cloud",
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.StreamAnalytics/StreamingJobs",
+      "apiVersion": "2017-04-01-preview",
+      "name": "[parameters('asaJob_Name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('asaJob_Sku')]"
+        },
+        "outputErrorPolicy": "stop",
+        "eventsOutOfOrderPolicy": "adjust",
+        "eventsOutOfOrderMaxDelayInSeconds": 0,
+        "eventsLateArrivalMaxDelayInSeconds": 5,
+        "jobType": "[parameters('asaJobType')]",
+        "dataLocale": "en-US"
+      }
+    }
+  ]
+}

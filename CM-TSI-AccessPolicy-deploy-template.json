@@ -1,0 +1,34 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "tsi_Env_Name": {
+      "type": "string",
+      "maxLength": 90,
+      "metadata": {
+        "description": "Name of the environment. The name cannot include:   '<', '>', '%', '&', ':', '\\', '?', '/' and any control characters. All other characters are allowed."
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "principalObjectId": {
+      "type": "string"
+    },
+    "roles": {
+      "type": "array"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.TimeSeriesInsights/environments/accesspolicies",
+      "apiVersion": "2020-05-15",
+      "name": "[concat(parameters('tsi_Env_Name'), '/', parameters('name'))]",
+      "dependsOn": [ ],
+      "properties": {
+        "principalObjectId": "[parameters('principalObjectId')]",
+        "roles": "[parameters('roles')]"
+      }
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "functionAppName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "storageEndpointProtocol": {
+      "type": "string"
+    },
+    "appInsights_InstrumentationKey": {
+      "type": "string"
+    },
+    "appInsights_ConnString": {
+      "type": "string",
+      "metadata": {
+        "description": "App Insights connection string"
+      }
+    },
+    "hostingPlanServerFarmId": {
+      "type": "string"
+    },
+    "redisCacheHostName": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "redisCachePassword": {
+      "type": "string",
+      "defaultValue": ""
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "apiVersion": "2018-11-01",
+      "name": "[parameters('functionAppName')]",
+      "type": "Microsoft.Web/sites",
+      "kind": "functionapp",
+      "location": "[parameters('location')]",
+      "tags": {},
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [],
+      "properties": {
+        "name": "[parameters('functionAppName')]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~3"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet"
+            },
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[parameters('appInsights_InstrumentationKey')]"
+            },
+            {
+              "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+              "value": "[parameters('appInsights_ConnString')]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[parameters('storageEndpointProtocol')]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[parameters('storageEndpointProtocol')]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[concat(toLower(parameters('functionAppName')), '9312')]"
+            },
+            {
+              "name": "RedisCacheHostName",
+              "value": "[parameters('redisCacheHostName')]"
+            },
+            {
+              "name": "RedisCachePassword",
+              "value": "[parameters('redisCachePassword')]"
+            }
+          ],
+          "minTlsVersion": "1.2",
+          "ftpsState": "Disabled"
+        },
+        "serverFarmId": "[parameters('hostingPlanServerFarmId')]",
+        "hostingEnvironment": "",
+        "clientAffinityEnabled": true,
+        "httpsOnly": true
+      }
+    }
+  ]
+}

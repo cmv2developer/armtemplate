@@ -1,0 +1,40 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "flowLogs_Name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "nsg_Id": {
+      "type": "string"
+    },
+    "storage_Id": {
+      "type": "string"
+    },
+    "nsg_Name": {
+      "type": "string"
+    }
+  },
+  "variables": { },
+  "resources": [
+    {
+      "name": "[concat('NetworkWatcher_northeurope/', parameters('flowLogs_Name'))]",
+      "type": "Microsoft.Network/networkWatchers/FlowLogs",
+      "location": "[parameters('location')]",
+      "apiVersion": "2019-09-01",
+      "properties": {
+        "targetResourceId": "[parameters('nsg_Id')]",
+        "storageId": "[parameters('storage_Id')]",
+        "enabled": true,
+        "flowAnalyticsConfiguration": {},
+        "retentionPolicy": {},
+        "format": {}
+      }
+
+    }
+  ],
+  "outputs": { }
+}

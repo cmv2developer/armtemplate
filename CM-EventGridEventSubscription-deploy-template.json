@@ -1,0 +1,61 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "eventGrid_Domains_Name": {
+      "defaultValue": "SAGMillEventTopic",
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    },
+    "eventGrid_DomainsTopic_Name": {
+      "defaultValue": "SAGMillEventTopic",
+      "type": "String"
+    },
+    "eventGrid_EventSubscription_Name": {
+      "type": "String"
+    },
+    "logicApp_EndPointUrl": {
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[concat(parameters('eventGrid_Domains_Name'), '/', parameters('eventGrid_DomainsTopic_Name'))]",
+      "type": "Microsoft.EventGrid/domains/topics",
+      "apiVersion": "2019-06-01"
+    },
+    {
+      "name": "[concat(parameters('eventGrid_Domains_Name'), '/', parameters('eventGrid_DomainsTopic_Name'), '/Microsoft.EventGrid/', parameters('eventGrid_EventSubscription_Name'))]",
+      "type": "Microsoft.EventGrid/domains/topics/providers/eventSubscriptions",
+      "location": "[parameters('location')]",
+      "apiVersion": "2019-06-01",
+      "properties": {
+        "destination": {
+          "endpointType": "WebHook",
+          "properties": {
+            "endpointUrl": "[parameters('logicApp_EndPointUrl')]"
+          }
+        },
+        "filter": {
+          "includedEventTypes": null
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.EventGrid/domains/topics', parameters('eventGrid_Domains_Name'), parameters('eventGrid_DomainsTopic_Name'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "eventGridTopicUriSetting": {
+      "value": "[reference(resourceId('Microsoft.EventGrid/domains', parameters('eventGrid_Domains_Name')), '2020-06-01').endpoint]",
+      "type": "string"
+    },
+    "EventGridTopicKeySetting": {
+      "value": "[listKeys(resourceId('Microsoft.EventGrid/domains', parameters('eventGrid_Domains_Name')), '2020-06-01').key1]",
+      "type": "string"
+    }
+  }
+}

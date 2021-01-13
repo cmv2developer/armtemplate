@@ -1,0 +1,44 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "eventGridTopic_Name": {
+      "defaultValue": "cmv2adteventroutetotwin",
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.EventGrid/topics",
+      "apiVersion": "2020-06-01",
+      "name": "[parameters('eventGridTopic_Name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "inputSchema": "EventGridSchema",
+        "publicNetworkAccess": "Enabled"
+      }
+    }
+  ],
+  "outputs": {
+    "EventGridTopicId": {
+      "value": "[concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourceGroup().name, '/providers/Microsoft.EventGrid/topics/', parameters('eventGridTopic_Name'))]",
+      "type": "string"
+    },
+    "EventGridTopicKeySetting1": {
+      "value": "[listKeys(resourceId('Microsoft.EventGrid/topics', parameters('eventGridTopic_Name')), '2020-06-01').key1]",
+      "type": "string"
+    },
+    "EventGridTopicKeySetting2": {
+      "value": "[listKeys(resourceId('Microsoft.EventGrid/topics', parameters('eventGridTopic_Name')), '2020-06-01').key2]",
+      "type": "string"
+    },
+    "eventGridTopicUriSetting": {
+      "value": "[reference(resourceId('Microsoft.EventGrid/topics', parameters('eventGridTopic_Name')), '2020-06-01').endpoint]",
+      "type": "string"
+    }
+  }
+}

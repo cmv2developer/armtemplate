@@ -1,0 +1,473 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "metadata": {
+        "description": "Name of the Logic App."
+      }
+    },
+    "logicAppLocation": {
+      "type": "string"
+    },
+    "office365_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "office365-2"
+    },
+    "office365_1_Connection_DisplayName": {
+      "type": "string",
+      "defaultValue": "jeffrey.m.tana@accenture.com"
+    },
+    "twilio_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "twilio"
+    },
+    "twilio_1_Connection_DisplayName": {
+      "type": "string",
+      "defaultValue": "twiliojeff"
+    },
+    "teams_1_Connection_Name": {
+      "type": "string",
+      "defaultValue": "teams"
+    },
+    "teams_1_Connection_DisplayName": {
+      "type": "string",
+      "defaultValue": "jeffrey.m.tana@accenture.com"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[parameters('logicAppName')]",
+      "type": "Microsoft.Logic/workflows",
+      "location": "[parameters('logicAppLocation')]",
+      "tags": {
+        "displayName": "LogicApp"
+      },
+      "apiVersion": "2016-06-01",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "actions": {
+            "Compose_Email_Content": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "emailHTML",
+                    "type": "string",
+                    "value": "@{variables('emailHeader')}<h1>@{body('Parse_JSON_Object')?['data']?['Title']}</h1><p>@{body('Parse_JSON_Object')?['data']?['Description']}</p>@{variables('emailFooter')}"
+                  }
+                ]
+              },
+              "runAfter": {
+                "Initialize_Email_Footer": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Send_SMS_Check": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('SMSToggle')",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Send_Text_Message_(SMS)": {
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['twilio_2']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "body": {
+                      "from": "+12023899599",
+                      "to": "+639291645117",
+                      "body": "@body('Parse_JSON_Object')?['data']?['Description']"
+                    },
+                    "path": "/Messages.json"
+                  },
+                  "runAfter": {}
+                }
+              },
+              "runAfter": {
+                "SMS_Toggle": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Terminate": {
+                    "type": "Terminate",
+                    "inputs": {
+                      "runStatus": "Succeeded"
+                    },
+                    "runAfter": {}
+                  }
+                }
+              }
+            },
+            "Convert_JSON_Array_to_Single_JSON_Object": {
+              "type": "Compose",
+              "inputs": "@take(substring(variables('alertObject'),1),sub(length(variables('alertObject')),2))",
+              "runAfter": {
+                "Initialize_Variable_to_String": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Initialize_Email_Footer": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "emailFooter",
+                    "type": "string",
+                    "value": "\t\t\t\t\t</div>\n          \t\t</td>\n\t      \t</tr>\n      \t</table>\n    \n    <div class=\"border\"/>\n    <div class=\"footer\">\n    \t<p>This is an automated email, please do not reply.</p>\n    \t<p>For any questions/concerns, please contact Connected Mine Support.</p>\n        <p style=\"text-align:right; line-height: 3;\">powered by <strong>Azure</strong></p>\n    </div>\n    </div>\n</body>\n</html>"
+                  }
+                ]
+              },
+              "runAfter": {
+                "Initialize_Email_Header": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Initialize_Email_Header": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "emailHeader",
+                    "type": "string",
+                    "value": "<!DOCTYPE html>\n<html>\n<head>\n    <title></title>\n    <style type=\"text/css\">\n    \tbody{\n        \tpadding: 100px;\n            margin: 0;\n            mso-line-height-rule: exactly;\n        }\n        table{\n        \tmargin: auto;\n            align:center;\n            cellspacing:0;\n            cellpadding:0;\n            border:0;\n            width:100%;\n        }\n    \th1,p{\n        \tfont-family: Arial;\n            margin: 0 50px 0 50px;\n            text-align: left;\n            line-height: 1.6;\n        }\n        div.border{\n        \tborder-top: 5px solid red;\n        }\n        div.footer{\n        \tpadding: 50px 0 0 0;\n            font-family: Arial;\n            font-size:small;\n            line-height: 1.6;\n        }\n    </style>\n</head>\n<body width=\"100%\">\n    <div style=\"max-width: 650px; margin: 0 auto;\" >\n    <div class=\"border\"/>\n\t\t<table>\n\t\t\t<tr>\n\t\t\t\t<td valign=\"middle\" style=\"padding: 100px 0 100px 0;\">\n\t\t\t\t\t<div>"
+                  }
+                ]
+              },
+              "runAfter": {
+                "AlertType_Check": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Initialize_Variable_to_String": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "alertObject",
+                    "type": "string",
+                    "value": "@{triggerBody()}"
+                  }
+                ]
+              },
+              "runAfter": {}
+            },
+            "Parse_JSON_Object": {
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@outputs('Convert_JSON_Array_to_Single_JSON_Object')",
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "Description": {
+                          "type": "string"
+                        },
+                        "Id": {
+                          "type": "integer"
+                        },
+                        "Severity": {
+                          "type": "string"
+                        },
+                        "Site": {
+                          "type": "string"
+                        },
+                        "Status": {
+                          "type": "string"
+                        },
+                        "Title": {
+                          "type": "string"
+                        },
+                        "Unit": {
+                          "type": "string"
+                        },
+                        "Validate": {
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "dataVersion": {
+                      "type": "string"
+                    },
+                    "eventTime": {
+                      "type": "string"
+                    },
+                    "eventType": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "metadataVersion": {
+                      "type": "string"
+                    },
+                    "subject": {
+                      "type": "string"
+                    },
+                    "topic": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "runAfter": {
+                "Convert_JSON_Array_to_Single_JSON_Object": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "SMS_Toggle": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "SMSToggle",
+                    "type": "boolean",
+                    "value": false
+                  }
+                ]
+              },
+              "runAfter": {
+                "Compose_Email_Content": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Email_Toggle": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "EmailToggle",
+                    "type": "boolean",
+                    "value": true
+                  }
+                ]
+              },
+              "runAfter": {
+                "Compose_Email_Content": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Send_Email_Check": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('EmailToggle')",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Send_Email_to_Subscribers": {
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['office365_1']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "body": {
+                      "To": "jeffrey.m.tana@accenture.com",
+                      "Subject": "@body('Parse_JSON_Object')?['data']?['Title']",
+                      "Body": "<p>@{variables('emailHTML')}</p>"
+                    },
+                    "path": "/v2/Mail"
+                  },
+                  "runAfter": {}
+                }
+              },
+              "runAfter": {
+                "Email_Toggle": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Terminate_2": {
+                    "type": "Terminate",
+                    "inputs": {
+                      "runStatus": "Succeeded"
+                    },
+                    "runAfter": {}
+                  }
+                }
+              }
+            },
+            "Teams_Toggle": {
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "TeamsToggle",
+                    "type": "boolean",
+                    "value": true
+                  }
+                ]
+              },
+              "runAfter": {
+                "Compose_Email_Content": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Condition": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@variables('TeamsToggle')",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Post_Teams_Alert": {
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['teams']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "body": {
+                      "body": {
+                        "content": "<p><span style=\"font-size: 16px\"></span><span style=\"font-size: 16px\">@{body('Parse_JSON_Object')?['data']?['Title']}</span><span style=\"font-size: 16px\"></span><br>\n@{body('Parse_JSON_Object')?['data']?['Description']}</p>",
+                        "contentType": "html"
+                      }
+                    },
+                    "path": "/v3/beta/teams/@{encodeURIComponent('2a1a6a87-34e3-4542-bae2-dcdea664894a')}/channels/@{encodeURIComponent('19:db9b323087e04125b7160ced4f2e7bca@thread.skype')}/messages"
+                  },
+                  "runAfter": {}
+                }
+              },
+              "runAfter": {
+                "Teams_Toggle": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Terminate_3": {
+                    "type": "Terminate",
+                    "inputs": {
+                      "runStatus": "Succeeded"
+                    },
+                    "runAfter": {}
+                  }
+                }
+              }
+            },
+            "AlertType_Check": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@body('Parse_JSON_Object')?['eventType']",
+                      "InsertAlert"
+                    ]
+                  }
+                ]
+              },
+              "actions": {},
+              "runAfter": {
+                "Parse_JSON_Object": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Invalid_Alert": {
+                    "type": "Terminate",
+                    "inputs": {
+                      "runStatus": "Succeeded"
+                    },
+                    "runAfter": {}
+                  }
+                }
+              }
+            }
+          },
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "schema": {}
+              }
+            }
+          },
+          "contentVersion": "1.0.0.0",
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "twilio_2": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'twilio')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('twilio_1_Connection_Name'))]",
+                "connectionName": "[parameters('twilio_1_Connection_Name')]"
+              },
+              "office365_1": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'office365')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]",
+                "connectionName": "[parameters('office365_1_Connection_Name')]"
+              },
+              "teams": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'teams')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('teams_1_Connection_Name'))]",
+                "connectionName": "[parameters('teams_1_Connection_Name')]"
+              }
+            }
+          }
+        }
+      },
+      "dependsOn": [ ]
+    }
+  ],
+  "outputs": {
+    "logicEndPointUrl": {
+      "value": "[listCallbackURL(resourceId('Microsoft.Logic/workflows/triggers', parameters('logicAppName'), 'manual'), '2016-06-01').value]",
+      "type": "string"
+    }
+  }
+}

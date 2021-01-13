@@ -1,0 +1,117 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources, defaults to the resourcegroup location."
+      }
+    },
+    "iotHubs_name": {
+      "defaultValue": "CMIoTHubV2",
+      "type": "string"
+    },
+    "iotHubsSkuName": {
+      "type": "string"
+    },
+    "iotHubsSkuTier": {
+      "type": "string"
+    },
+    "iotHubsSkuCapacity": {
+      "type": "string"
+    },
+    "iotHubs_PartitionCount": {
+      "type": "string"
+    },
+    "iotHubs_MessageRetentionInDays": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2020-03-01",
+      "name": "[parameters('iotHubs_name')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "Project": "Connected Mine",
+        "ProjectType": "Internal"
+      },
+      "sku": {
+        "name": "[parameters('iotHubsSkuName')]",
+        "tier": "[parameters('iotHubsSkuTier')]",
+        "capacity": "[parameters('iotHubsSkuCapacity')]"
+      },
+      "identity": {
+        "type": "None"
+      },
+      "properties": {
+        "ipFilterRules": [],
+        "eventHubEndpoints": {
+          "events": {
+            "retentionTimeInDays": "[parameters('iotHubs_MessageRetentionInDays')]",
+            "partitionCount": "[parameters('iotHubs_PartitionCount')]"
+          }
+        },
+        "routing": {
+          "endpoints": {
+            "serviceBusQueues": [],
+            "serviceBusTopics": [],
+            "eventHubs": [],
+            "storageContainers": []
+          },
+          "enrichments": [],
+          "routes": [],
+          "fallbackRoute": {
+            "name": "$fallback",
+            "source": "DeviceMessages",
+            "condition": "true",
+            "endpointNames": [
+              "events"
+            ],
+            "isEnabled": true
+          }
+        },
+        "messagingEndpoints": {
+          "fileNotifications": {
+            "lockDurationAsIso8601": "PT1M",
+            "ttlAsIso8601": "PT1H",
+            "maxDeliveryCount": 10
+          }
+        },
+        "enableFileUploadNotifications": false,
+        "cloudToDevice": {
+          "maxDeliveryCount": 10,
+          "defaultTtlAsIso8601": "PT1H",
+          "feedback": {
+            "lockDurationAsIso8601": "PT1M",
+            "ttlAsIso8601": "PT1H",
+            "maxDeliveryCount": 10
+          }
+        },
+        "features": "None"
+      }
+    }
+  ],
+  "outputs": {
+    "iotHub": {
+      "value": "[resourceId('Microsoft.Devices/IotHubs', parameters('iotHubs_name'))]",
+      "type": "string"
+    },
+    "iotHubOwnerKey": {
+      "value": "[listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('iotHubs_name'), 'iothubowner'), '2020-03-01').primaryKey]",
+      "type": "string"
+    },
+    "serviceKey": {
+      "value": "[listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('iotHubs_name'), 'service'), '2020-03-01').primaryKey]",
+      "type": "string"
+    },
+    "deviceKey": {
+      "value": "[listKeys(resourceId('Microsoft.Devices/IotHubs/Iothubkeys', parameters('iotHubs_name'), 'device'), '2020-03-01').primaryKey]",
+      "type": "string"
+    }
+  }
+}

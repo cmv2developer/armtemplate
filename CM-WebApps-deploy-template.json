@@ -1,0 +1,125 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "webApps_Name": {
+      "type": "string"
+    },
+    "hostingPlanServerFarmId": {
+      "type": "string"
+    },
+    "appInsights_InstrumentationKey": {
+      "type": "string"
+    },
+    "appInsights_ConnString": {
+      "type": "string",
+      "metadata": {
+        "description": "App Insights connection string"
+      }
+    },
+    "eventHub_Name": {
+      "type": "string"
+    },
+    "eventHub_ConnString": {
+      "type": "string"
+    },
+    "sql_ConnString": {
+      "type": "string"
+    },
+    "storageAccount_ConnString": {
+      "type": "string"
+    },
+    "eventHub_ConsumerGroup": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "apiVersion": "2018-11-01",
+      "name": "[parameters('webApps_Name')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[parameters('location')]",
+      "tags": {},
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [],
+      "properties": {
+        "name": "[parameters('webApps_Name')]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[parameters('appInsights_InstrumentationKey')]"
+            },
+            {
+              "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+              "value": "[parameters('appInsights_ConnString')]"
+            },
+            {
+              "name": "ApplicationInsightsAgent_EXTENSION_VERSION",
+              "value": "~2"
+            },
+            {
+              "name": "XDT_MicrosoftApplicationInsights_Mode",
+              "value": "default"
+            },
+            {
+              "name": "EventHubName",
+              "value": "[parameters('eventHub_Name')]"
+            },
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "6.9.1"
+            },
+            {
+              "name": "EventHubConsumerGroup",
+              "value": "[parameters('eventHub_ConsumerGroup')]"
+            }
+          ],
+          "connectionStrings": [
+            {
+              "name": "EventHub",
+              "connectionString": "[parameters('eventHub_ConnString')]",
+              "type": "Custom"
+            },
+            {
+              "name": "SQL",
+              "connectionString": "[parameters('sql_ConnString')]",
+              "type": "SQLAzure"
+            },
+            {
+              "name": "StorageAccount",
+              "connectionString": "[parameters('storageAccount_ConnString')]",
+              "type": "Custom"
+            }
+          ],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "dotnet"
+            }
+          ],
+          "phpVersion": "OFF",
+          "netFrameworkVersion": "v4.0",
+          "alwaysOn": true,
+          "minTlsVersion": "1.2",
+          "ftpsState": "Disabled"
+        },
+        "serverFarmId": "[parameters('hostingPlanServerFarmId')]",
+        "clientAffinityEnabled": true,
+        "httpsOnly": true
+      }
+    }
+  ],
+  "outputs": {
+    "connections": {
+      "value": "[resourceId('Microsoft.Web/sites', parameters('webApps_Name'))]",
+      "type": "string"
+    }
+  }
+}

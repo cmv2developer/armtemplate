@@ -1,0 +1,42 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adt_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "name of the Digital Twin instance"
+      }
+    },
+    "adt_EndPoint_Name": {
+      "type": "string"
+    },
+    "topicEndPointUrl": {
+      "type": "string"
+    },
+    "eventGridTopicKey1": {
+      "type": "securestring"
+    },
+    "eventGridTopicKey2": {
+      "type": "securestring"
+    },
+    "adt_EndPoint_Type": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.DigitalTwins/digitalTwinsInstances/endpoints",
+      "apiVersion": "2020-03-01-preview",
+      "name": "[concat(parameters('adt_Name'), '/adtendpointfunction')]",
+      "properties": {
+        "endpointType": "[parameters('adt_EndPoint_Type')]",
+        "TopicEndpoint": "[parameters('topicEndPointUrl')]",
+        "accessKey1": "[parameters('eventGridTopicKey1')]",
+        "accessKey2": "[parameters('eventGridTopicKey2')]"
+      }
+    }
+  ],
+  "outputs": { }
+}

@@ -1,0 +1,41 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "mapsAccount_Name": {
+      "defaultValue": "cmv2mapsvis",
+      "type": "String"
+    },
+    "mapsCreator_name": {
+      "defaultValue": "cmv2mapscreator",
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Maps/accounts",
+      "apiVersion": "2020-02-01-preview",
+      "name": "[parameters('mapsAccount_Name')]",
+      "location": "global",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard"
+      }
+    },
+    {
+      "type": "Microsoft.Maps/accounts/privateAtlases",
+      "apiVersion": "2020-02-01-preview",
+      "name": "[concat(parameters('mapsAccount_Name'), '/', parameters('mapsCreator_name'))]",
+      "location": "United States",
+      "dependsOn": [
+        "[resourceId('Microsoft.Maps/accounts', parameters('mapsAccount_Name'))]"
+      ],
+      "tags": {
+        "Project": "Connected Mine",
+        "ProjectType": "Internal",
+        "Owner": "Prasoon Jaiswal"
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.5.0.0",
+  "parameters": {
+    "asaJob_Name": {
+      "type": "String"
+    },
+    "asa_Output_Name": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "asa_Output_FunctionAppName": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "asa_Output_FunctionName": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "asa_Output_ApiKey": {
+      "type": "securestring",
+      "defaultValue": ""
+    }
+  },
+  "variables": {},
+  "resources": [    
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs/outputs",
+      "apiVersion": "2016-03-01",
+      "name": "[concat(parameters('asaJob_Name'), '/', parameters('asa_Output_Name'))]",
+      "dependsOn": [],
+      "properties": {
+        "datasource": {
+          "type": "Microsoft.AzureFunction",
+          "properties": {
+            "functionAppName": "[parameters('asa_Output_FunctionAppName')]",
+            "functionName": "[parameters('asa_Output_FunctionName')]",
+            "apiKey": "[parameters('asa_Output_ApiKey')]",
+            "maxBatchSize": null,
+            "maxBatchCount": null
+          }
+        }
+      }
+    }
+  ]
+}

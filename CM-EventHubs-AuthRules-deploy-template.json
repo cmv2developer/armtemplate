@@ -1,0 +1,57 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "eHubs_NameSpaces_Name": {
+      "type": "String"
+    },
+    "eHubs_Name": {
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    },
+    "eHubs_AccessPolicyName": {
+      "type": "String"
+    },
+    "isRightSend": {
+      "type": "bool",
+      "defaultValue":  false
+    }
+  },
+  "variables": {
+    "rightsLS": [
+      "Listen",
+      "Send"
+    ],
+    "rightsL": [
+      "Listen"
+    ]
+  },
+  "resources": [
+    {
+      "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+      "apiVersion": "2017-04-01",
+      "name": "[concat(parameters('eHubs_NameSpaces_Name'), '/', parameters('eHubs_Name'), '/', parameters('eHubs_AccessPolicyName'))]",
+      "location": "[parameters('location')]",
+      "dependsOn": [],
+      "properties": {
+        "rights": "[If(parameters('isRightSend'), variables('rightsLS'), variables('rightsL'))]"
+      }
+    }
+  ],
+  "outputs": {
+    "sharedAccessPolicyKey": {
+      "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eHubs_NameSpaces_Name'), parameters('eHubs_Name'), parameters('eHubs_AccessPolicyName')), '2017-04-01').primaryKey]",
+      "type": "string"
+    },
+    "sharedAccessPrimaryConnectionString": {
+      "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eHubs_NameSpaces_Name'), parameters('eHubs_Name'), parameters('eHubs_AccessPolicyName')), '2017-04-01').primaryConnectionString]",
+      "type": "string"
+    },
+    "sharedAccessConnectionString": {
+      "value": "[concat('Endpoint=sb://',parameters('eHubs_NameSpaces_Name'), '.servicebus.windows.net/;SharedAccessKeyName=', parameters('eHubs_AccessPolicyName'), ';SharedAccessKey=', listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eHubs_NameSpaces_Name'), parameters('eHubs_Name'), parameters('eHubs_AccessPolicyName')), '2017-04-01').primaryKey)]",
+      "type": "string"
+    }
+  }
+}

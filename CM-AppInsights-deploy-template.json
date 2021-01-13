@@ -1,0 +1,41 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "appInsights_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "name of the App Insights instance"
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[parameters('appInsights_Name')]",
+      "type": "microsoft.insights/components",
+      "location": "[parameters('location')]",
+      "tags": {},
+      "apiVersion": "2014-08-01",
+      "properties": {
+        "ApplicationId": "[parameters('appInsights_Name')]",
+        "Application_Type": "web",
+        "Flow_Type": "Redfield",
+        "Request_Source": "IbizaAIExtension"
+      }
+    }
+  ],
+  "outputs": {
+    "appInsights_ConnString": {
+      "value": "[reference(resourceId('microsoft.insights/components/', parameters('appInsights_Name')), '2015-05-01').ConnectionString]",
+      "type": "string"
+    },
+    "appInsights_InstrumentationKey": {
+      "value": "[reference(resourceId('microsoft.insights/components/', parameters('appInsights_Name')), '2015-05-01').InstrumentationKey]",
+      "type": "string"
+    }
+  }
+}

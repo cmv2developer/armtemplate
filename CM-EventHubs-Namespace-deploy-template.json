@@ -1,0 +1,40 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "eHubs_NameSpaces_Name": {
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    },
+    "eHubs_skuTier": {
+      "type": "String"
+    },
+    "eHubs_skuCapacity": {
+      "type": "String"
+    },
+    "eHubs_MaximumThroughputUnits": {
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.EventHub/namespaces",
+      "apiVersion": "2018-01-01-preview",
+      "name": "[parameters('eHubs_NameSpaces_Name')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('eHubs_skuTier')]",
+        "tier": "[parameters('eHubs_skuTier')]",
+        "capacity": "[parameters('eHubs_skuCapacity')]"
+      },
+      "properties": {
+        "isAutoInflateEnabled": false,
+        "maximumThroughputUnits": "[parameters('eHubs_MaximumThroughputUnits')]",
+        "zoneRedundant": false
+      }
+    }
+  ]
+}

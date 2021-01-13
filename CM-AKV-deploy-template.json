@@ -1,0 +1,115 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "akv_Name": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "akv_Sku": {
+      "type": "string"
+    },
+    "tenant": {
+      "type": "string"
+    },
+    "akv_ObjectId": {
+      "type": "string"
+    },
+    "akv_EnabledForDeployment": {
+      "type": "bool"
+    },
+    "akv_EnabledForTemplateDeployment": {
+      "type": "bool"
+    },
+    "akv_EnabledForDiskEncryption": {
+      "type": "bool"
+    },
+    "akv_EnableRbacAuthorization": {
+      "type": "bool"
+    },
+    "akv_EnableSoftDelete": {
+      "type": "bool"
+    },
+    "akv_SoftDeleteRetentionInDays": {
+      "type": "int"
+    },
+    "akv_NetworkAcls": {
+      "type": "object"
+    }
+  },
+  "variables": {
+    "accessPolicies": [
+      {
+        "objectId": "[parameters('akv_ObjectId')]",
+        "tenantId": "[parameters('tenant')]",
+        "permissions": {
+          "keys": [
+            "Get",
+            "List",
+            "Update",
+            "Create",
+            "Import",
+            "Delete",
+            "Recover",
+            "Backup",
+            "Restore"
+          ],
+          "secrets": [
+            "Get",
+            "List",
+            "Set",
+            "Delete",
+            "Recover",
+            "Backup",
+            "Restore"
+          ],
+          "certificates": [
+            "Get",
+            "List",
+            "Update",
+            "Create",
+            "Import",
+            "Delete",
+            "Recover",
+            "Backup",
+            "Restore",
+            "ManageContacts",
+            "ManageIssuers",
+            "GetIssuers",
+            "ListIssuers",
+            "SetIssuers",
+            "DeleteIssuers"
+          ]
+        }
+      }
+    ]
+  },
+  "resources": [
+    {
+      "apiVersion": "2018-02-14",
+      "name": "[parameters('akv_Name')]",
+      "location": "[parameters('location')]",
+      "type": "Microsoft.KeyVault/vaults",
+      "properties": {
+        "enabledForDeployment": "[parameters('akv_EnabledForDeployment')]",
+        "enabledForTemplateDeployment": "[parameters('akv_EnabledForTemplateDeployment')]",
+        "enabledForDiskEncryption": "[parameters('akv_EnabledForDiskEncryption')]",
+        "enableRbacAuthorization": "[parameters('akv_EnableRbacAuthorization')]",
+        "accessPolicies": "[variables('accessPolicies')]",
+        "tenantId": "[parameters('tenant')]",
+        "sku": {
+          "name": "[parameters('akv_Sku')]",
+          "family": "A"
+        },
+        "enableSoftDelete": "[parameters('akv_EnableSoftDelete')]",
+        "softDeleteRetentionInDays": "[parameters('akv_SoftDeleteRetentionInDays')]",
+        "networkAcls": "[parameters('akv_NetworkAcls')]"
+      },
+      "tags": {},
+      "dependsOn": []
+    }
+  ],
+  "outputs": {}
+}

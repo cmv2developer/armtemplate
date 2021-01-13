@@ -1,0 +1,55 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.5.0.0",
+  "parameters": {
+    "asaJob_Name": {
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    },
+    "asa_IotHubInput_IotHubNamespace": {
+      "type": "string"
+    },
+    "asa_IotHubInput_ConsumerGroupName": {
+      "type": "string"
+    },
+    "asa_IotHubInput_SharedAccessPolicyName": {
+      "type": "string"
+    },
+    "asa_IotHubInput_SharedAccessPolicyKey": {
+      "type": "securestring"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.StreamAnalytics/streamingjobs/inputs",
+      "apiVersion": "2016-03-01",
+      "name": "[concat(parameters('asaJob_Name'), '/IotHubInput')]",
+      "dependsOn": [],
+      "properties": {
+        "type": "Stream",
+        "datasource": {
+          "type": "Microsoft.Devices/IotHubs",
+          "properties": {
+            "iotHubNamespace": "[parameters('asa_IotHubInput_IotHubNamespace')]",
+            "consumerGroupName": "[parameters('asa_IotHubInput_ConsumerGroupName')]",
+            "endpoint": "messages/events",
+            "sharedAccessPolicyName": "[parameters('asa_IotHubInput_SharedAccessPolicyName')]",
+            "sharedAccessPolicyKey": "[parameters('asa_IotHubInput_SharedAccessPolicyKey')]"
+          }
+        },
+        "compression": {
+          "type": "None"
+        },
+        "serialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "North Europe",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "sqlserver_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure SQL Server name. Must be globally unique."
+      }
+    },
+    "sqldatabase_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure SQL database name."
+      }
+    },
+    "jobAgent_Name": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "controlDatabaseId": "[resourceId('Microsoft.SQL/servers/databases', parameters('sqlserver_Name'), parameters('sqldatabase_Name'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers/jobAgents",
+      "apiVersion": "2017-03-01-preview",
+      "name": "[concat(parameters('sqlserver_Name'), '/', parameters('jobAgent_Name'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "databaseId": "[variables('controlDatabaseId')]"
+      }
+    }
+    ],
+  "outputs": {  }
+}

@@ -1,0 +1,135 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "tsi_Env_Name": {
+      "type": "string",
+      "maxLength": 90,
+      "metadata": {
+        "description": "Name of the environment. The name cannot include:   '<', '>', '%', '&', ':', '\\', '?', '/' and any control characters. All other characters are allowed."
+      }
+    },
+    "tsi_Env_SkuName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the sku. For more information, see https://azure.microsoft.com/pricing/details/time-series-insights/"
+      }
+    },
+    "tsi_Env_Kind": {
+      "type": "string",
+      "metadata": {
+        "description": "The Time Series Environment kind."
+      }
+    },
+    "tsi_Env_SkuCapacity": {
+      "type": "int",
+      "metadata": {
+        "description": "The unit capacity of the Sku. For more information, see https://azure.microsoft.com/pricing/details/time-series-insights/"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "tsi_Env_Tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "The map of key-value pairs used to tag the environment resource."
+      }
+    },
+    "tsi_Env_TimeSeriesIdProperties": {
+      "type": "array",
+      "maxLength": 3,
+      "metadata": {
+        "description": "Time Series ID acts as a partition key for your data and as a primary key for your time series model. It is important that you specify the appropriate Time Series Property ID during environment creation, since you can’t change it later. Note that the Property ID is case sensitive. You can use 1-3 keys: one is required, but up to three can be used to create a composite."
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account name."
+      }
+    },
+    "eHubs_eventSourceName": {
+      "type": "string",
+      "maxLength": 90,
+      "metadata": {
+        "description": "Name of the event source child resource. The name cannot include:   '<', '>', '%', '&', ':', '\\', '?', '/' and any control characters. All other characters are allowed."
+      }
+    },
+    "eHubs_NamespaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The namespace of the source event hub."
+      }
+    },
+    "eHubs_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the source event hub."
+      }
+    },
+    "eHubs_EventSourceKeyName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the shared access key that the Time Series Insights service will use to connect to the eventSource."
+      }
+    },
+    "eHubs_ConsumerGroup_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the consumer group in event hub."
+      }
+    },
+    "eHubs_SharedAccessKey": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2020-05-15",
+      "type": "Microsoft.TimeSeriesInsights/environments",
+      "kind": "[parameters('tsi_Env_Kind')]",
+      "name": "[parameters('tsi_Env_Name')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('tsi_Env_SkuName')]",
+        "capacity": "[parameters('tsi_Env_SkuCapacity')]"
+      },
+      "tags": "[parameters('tsi_Env_Tags')]",
+      "properties": {
+        "storageConfiguration": {
+          "accountName": "[parameters('storageAccountName')]",
+          "managementKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2018-02-01').keys[0].value]"
+        },
+        "timeSeriesIdProperties": "[parameters('tsi_Env_TimeSeriesIdProperties')]",
+        "warmStoreConfiguration": {
+          "dataRetention": "P31D"
+        }
+      },
+      "resources": [
+        {
+          "type": "eventsources",
+          "name": "[parameters('eHubs_eventSourceName')]",
+          "apiVersion": "2020-05-15",
+          "location": "[parameters('location')]",
+          "kind": "Microsoft.EventHub",
+          "properties": {
+            "eventSourceResourceId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', resourceGroup().name, '/providers/Microsoft.EventHub/namespaces/', parameters('eHubs_NamespaceName'), '/eventhubs/',parameters('eHubs_Name'))]",
+            "eventHubName": "[parameters('eHubs_Name')]",
+            "serviceBusNamespace": "[parameters('eHubs_NamespaceName')]",
+            "consumerGroupName": "[parameters('eHubs_ConsumerGroup_Name')]",
+            "keyName": "[parameters('eHubs_EventSourceKeyName')]",
+            "sharedAccessKey": "[parameters('eHubs_SharedAccessKey')]"
+          },
+          "dependsOn": [
+            "[concat('Microsoft.TimeSeriesInsights/environments/', parameters('tsi_Env_Name'))]"
+          ]
+        }
+      ]
+    }
+  ]
+}

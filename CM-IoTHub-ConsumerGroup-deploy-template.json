@@ -1,0 +1,25 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "iotHubs_name": {
+      "defaultValue": "CMIoTHubV2",
+      "type": "String"
+    },
+    "iotHubs_ConsumerGroup": {
+      "defaultValue": "cg1",
+      "type": "String"
+    }
+  },
+  "variables": {
+    "consumerGroupName": "[concat(parameters('iotHubs_name'), '/events/', parameters('iotHubs_ConsumerGroup'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
+      "apiVersion": "2018-04-01",
+      "name": "[variables('consumerGroupName')]"
+    }
+  ],
+  "outputs": {  }
+}

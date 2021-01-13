@@ -1,0 +1,38 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "String"
+    },
+    "connection_Name": {
+      "type": "string",
+      "defaultValue": "office365"
+    },
+    "connection_DisplayName": {
+      "type": "string",
+      "defaultValue": ""
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "MICROSOFT.WEB/CONNECTIONS",
+      "apiVersion": "2018-07-01-preview",
+      "name": "[parameters('connection_Name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "api": {
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('location'), '/managedApis/', parameters('connection_Name'))]"
+        },
+        "displayName": "[parameters('connection_DisplayName')]"
+      }
+    }
+  ],
+  "outputs": {
+    "connections": {
+      "value": "[resourceId('MICROSOFT.WEB/CONNECTIONS', parameters('connection_Name'))]",
+      "type": "string"
+    }
+  }
+}

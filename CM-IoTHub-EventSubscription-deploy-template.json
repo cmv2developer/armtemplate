@@ -1,0 +1,52 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "iotHubs_name": {
+      "defaultValue": "cmv2adteventroutetotwin",
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "iotHubSubscription_Name": {
+      "defaultValue": "cmv2adteventroutetotwin",
+      "type": "string"
+    },
+    "functionAppName": {
+      "type": "string"
+    },
+    "functionName": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[concat(parameters('iotHubs_name'), '/Microsoft.EventGrid/', parameters('iotHubSubscription_Name'))]",
+      "type": "Microsoft.Devices/IotHubs/providers/eventSubscriptions",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "topic": "[resourceId('Microsoft.Devices/IotHubs', parameters('iotHubs_name'))]",
+        "destination": {
+          "endpointType": "AzureFunction",
+          "properties": {
+            "resourceId": "[concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'), '/functions/' , parameters('functionName'))]",
+            "maxEventsPerBatch": 1,
+            "preferredBatchSizeInKilobytes": 64
+          }
+        },
+        "filter": {
+          "includedEventTypes": [
+            "Microsoft.Devices.DeviceTelemetry"
+          ],
+          "advancedFilters": []
+        },
+        "labels": [],
+        "eventDeliverySchema": "EventGridSchema"
+      }
+    }
+  ],
+  "outputs": { }
+}

@@ -1,0 +1,53 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "eventGridTopic_Name": {
+      "defaultValue": "cmv2adteventroutetotwin",
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "eventGridTSubscription_Name": {
+      "defaultValue": "cmv2adteventroutetotwin",
+      "type": "string"
+    },
+    "eventGridTopicId": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "functionAppName": {
+      "type": "string"
+    },
+    "functionName": {
+      "type": "string"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "name": "[concat(parameters('eventGridTopic_Name'), '/Microsoft.EventGrid/', parameters('eventGridTSubscription_Name'))]",
+      "type": "Microsoft.EventGrid/topics/providers/eventSubscriptions",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "topic": "[parameters('eventGridTopicId')]",
+        "destination": {
+          "endpointType": "AzureFunction",
+          "properties": {
+            "resourceId": "[concat('/subscriptions/', subscription().subscriptionId,'/resourcegroups/', resourceGroup().name, '/providers/Microsoft.Web/sites/', parameters('functionAppName'), '/functions/' , parameters('functionName'))]",
+            "maxEventsPerBatch": 1,
+            "preferredBatchSizeInKilobytes": 64
+          }
+        },
+        "filter": {
+          "advancedFilters": []
+        },
+        "labels": [],
+        "eventDeliverySchema": "EventGridSchema"
+      }
+    }
+  ],
+  "outputs": { }
+}
